@@ -1,4 +1,3 @@
 package com.cms.events
 
-data class Comment(val user: String, val content: String) {
-}
+data class Comment(val author: String, val content: String)

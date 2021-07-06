@@ -1,7 +1,11 @@
 package com.cms.events;
 
+import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.http.javadsl.Http;
+import com.cms.events.mongo.MongoConfiguration;
+import com.cms.events.mongo.ReadDataStore;
+import com.mongodb.reactivestreams.client.MongoDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,11 +16,13 @@ class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     private static ActorSystem system;
+    private static EventRepository eventRepository;
 
     public static void main(String[] args) {
         loadConfigOverrides(args);
 
         initializeActorSystem();
+        initializeEventRepository();
         initializeHttpServer();
     }
 
@@ -27,10 +33,10 @@ class Main {
         for (String arg : args) {
             Matcher matcher = pattern.matcher(arg);
 
-            while(matcher.find()) {
+            while (matcher.find()) {
                 String key = matcher.group(1);
                 String value = matcher.group(2);
-                logger.info("Config Override: "+key+" = "+value);
+                logger.info("Config Override: " + key + " = " + value);
                 System.setProperty(key, value);
             }
         }
@@ -40,15 +46,24 @@ class Main {
         system = ActorSystem.create("events");
     }
 
+    private static void initializeEventRepository() {
+        MongoDatabase mongoDatabase = new MongoConfiguration().create();
+        ReadDataStore readDataStore = new ReadDataStore(system, mongoDatabase);
+        MongoEventRepository mongoEventRepository = new MongoEventRepository(readDataStore);
+        mongoEventRepository.load();
+        eventRepository = mongoEventRepository;
+    }
+
     private static void initializeHttpServer() {
-        EventRoutes routes = new EventRoutes();
+        ActorRef eventServiceActor = system.actorOf(EventService.create(eventRepository));
+        EventRoutes routes = new EventRoutes(eventServiceActor);
 
         int httpPort = system.settings()
-            .config()
-            .getInt("akka.http.server.default-http-port");
+                .config()
+                .getInt("akka.http.server.default-http-port");
 
         Http.get(system)
-            .newServerAt("localhost", httpPort)
-            .bind(routes.createRoutes());
+                .newServerAt("localhost", httpPort)
+                .bind(routes.createRoutes());
     }
 }
