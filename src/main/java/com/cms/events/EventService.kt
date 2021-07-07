@@ -4,6 +4,7 @@ import akka.actor.AbstractActor
 import akka.actor.ActorRef
 import akka.actor.Props
 import akka.japi.pf.ReceiveBuilder
+import java.util.*
 
 class EventService private constructor(private val eventRepository: EventRepository) : AbstractActor() {
 
@@ -21,7 +22,7 @@ class EventService private constructor(private val eventRepository: EventReposit
             .build()
     }
 
-    data class Message(val to: String, val eventMessage: EventMessage)
+    data class Message(val to: String = UUID.randomUUID().toString(), val eventMessage: EventMessage)
 
     private fun handle(message: Message) {
         val loyaltyActor = context

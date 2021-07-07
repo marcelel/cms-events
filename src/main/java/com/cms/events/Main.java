@@ -49,9 +49,7 @@ class Main {
     private static void initializeEventRepository() {
         MongoDatabase mongoDatabase = new MongoConfiguration().create();
         ReadDataStore readDataStore = new ReadDataStore(system, mongoDatabase);
-        MongoEventRepository mongoEventRepository = new MongoEventRepository(readDataStore);
-        mongoEventRepository.load();
-        eventRepository = mongoEventRepository;
+        eventRepository = new MongoEventRepository(readDataStore);
     }
 
     private static void initializeHttpServer() {

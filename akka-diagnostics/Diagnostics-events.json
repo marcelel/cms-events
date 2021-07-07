@@ -1,12 +1,12 @@
 {
-  "start-time" : "2021-07-06T16:27:42.607",
+  "start-time" : "2021-07-07T15:52:26.138",
   "akka-version" : "2.6.15",
   "classpath" : "/Users/mlekston/IdeaProjects/cms/events/target/events-1.0-SNAPSHOT-allinone.jar",
   "configuration-warnings" : [],
   "system-metrics" : {
     "heap-init" : 268435456,
     "heap-max" : 4294967296,
-    "heap-used" : 74929816,
+    "heap-used" : 99051040,
     "heap-committed" : 268435456,
     "os-processors" : 12,
     "mem-pool-0" : {
@@ -14,7 +14,7 @@
       "type" : "Non-heap memory",
       "init" : 2555904,
       "max" : 5836800,
-      "used" : 1253376,
+      "used" : 1304832,
       "committed" : 2555904
     },
     "mem-pool-1" : {
@@ -22,55 +22,55 @@
       "type" : "Non-heap memory",
       "init" : 0,
       "max" : -1,
-      "used" : 48402208,
-      "committed" : 49938432
+      "used" : 53380920,
+      "committed" : 54968320
     },
     "mem-pool-2" : {
       "name" : "CodeHeap 'profiled nmethods'",
       "type" : "Non-heap memory",
       "init" : 2555904,
       "max" : 122908672,
-      "used" : 5390592,
-      "committed" : 5439488
+      "used" : 6096256,
+      "committed" : 6160384
     },
     "mem-pool-3" : {
       "name" : "Compressed Class Space",
       "type" : "Non-heap memory",
       "init" : 0,
       "max" : 1073741824,
-      "used" : 5846312,
-      "committed" : 6422528
+      "used" : 6448728,
+      "committed" : 7340032
     },
     "mem-pool-4" : {
       "name" : "G1 Eden Space",
       "type" : "Heap memory",
       "init" : 27262976,
       "max" : -1,
-      "used" : 62914560,
-      "committed" : 79691776
+      "used" : 89128960,
+      "committed" : 97517568
     },
     "mem-pool-5" : {
       "name" : "G1 Old Gen",
       "type" : "Heap memory",
       "init" : 241172480,
       "max" : 4294967296,
-      "used" : 7820952,
-      "committed" : 184549376
+      "used" : 4679200,
+      "committed" : 165675008
     },
     "mem-pool-6" : {
       "name" : "G1 Survivor Space",
       "type" : "Heap memory",
       "init" : 0,
       "max" : -1,
-      "used" : 4194304,
-      "committed" : 4194304
+      "used" : 5242880,
+      "committed" : 5242880
     },
     "mem-pool-7" : {
       "name" : "CodeHeap 'non-profiled nmethods'",
       "type" : "Non-heap memory",
       "init" : 2555904,
       "max" : 122912768,
-      "used" : 958976,
+      "used" : 1124096,
       "committed" : 2555904
     }
   },
@@ -260,6 +260,11 @@
     "ftp" : {},
     "gopherProxySet" : "false",
     "http" : {},
+    "intellij" : {
+        "debug" : {
+            "agent" : "true"
+        }
+    },
     "java" : {
         "awt" : {
             "graphicsenv" : "sun.awt.CGraphicsEnvironment",
@@ -302,6 +307,13 @@
             },
             "vendor" : "Oracle Corporation",
             "version" : "11.0.10+9"
+        }
+    },
+    "jboss" : {
+        "modules" : {
+            "system" : {
+                "pkgs" : "com.intellij.rt"
+            }
         }
     },
     "jdk" : {

@@ -52,9 +52,8 @@ class EventActor private constructor(private val eventRepository: EventRepositor
     }
 
     private fun handle(eventCommand: CreateEventCommand) {
-        val event = eventCommand.toEvent()
-        val result = eventRepository.save(event)
-        //todo
+        this.event = eventCommand.toEvent(eventId)
+        val result = eventRepository.save(event!!)
         pipe(result, context.dispatcher).to(sender)
     }
 

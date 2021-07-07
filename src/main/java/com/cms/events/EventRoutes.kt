@@ -1,12 +1,15 @@
 package com.cms.events
 
 import akka.actor.ActorRef
+import akka.http.javadsl.marshallers.jackson.Jackson
+import akka.http.javadsl.model.HttpEntity
 import akka.http.javadsl.model.HttpHeader
 import akka.http.javadsl.model.HttpResponse
 import akka.http.javadsl.model.StatusCodes
 import akka.http.javadsl.server.AllDirectives
 import akka.http.javadsl.server.PathMatchers
 import akka.http.javadsl.server.Route
+import akka.http.javadsl.unmarshalling.Unmarshaller
 import akka.pattern.Patterns.ask
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -17,6 +20,8 @@ import java.time.Duration
 internal class EventRoutes(private val eventService: ActorRef) : AllDirectives() {
 
     private val timeout = Duration.ofSeconds(5)
+    private val createEventCommandUnmarshaller: Unmarshaller<HttpEntity, CreateEventCommand> =
+        Jackson.unmarshaller(JsonSerializerFactory.jsonSerializer().objectMapper, CreateEventCommand::class.java)
 
     fun createRoutes(): Route {
         return pathPrefix(
@@ -30,6 +35,7 @@ internal class EventRoutes(private val eventService: ActorRef) : AllDirectives()
                         getEvent(id)
                     }
                 },
+                pathEnd { post { createEvent() } },
                 pathEnd { get { getEvents() } }
             )
         }
@@ -52,13 +58,13 @@ internal class EventRoutes(private val eventService: ActorRef) : AllDirectives()
         val message = EventService.Message(id, query)
         val result = ask(eventService, message, timeout).thenApply { it as GetEventQueryResult }
             .thenApply { it.event }
-            .thenApply { if (it != null) OBJECT_MAPPER.writeValueAsString(it) else "Event with id $id does not exist" }
+            .thenApply { if (it != null) OBJECT_MAPPER.writeValueAsString(it) else "" }
             .thenApply {
                 if (it.isEmpty()) {
                     HttpResponse.create()
                         .withStatus(StatusCodes.BAD_REQUEST)
                         .addHeader(HttpHeader.parse("Access-Control-Allow-Origin", "*"))
-                        .withEntity(it)
+                        .withEntity("Event with id $id does not exist")
                 } else {
                     HttpResponse.create()
                         .addHeader(HttpHeader.parse("Access-Control-Allow-Origin", "*"))
@@ -68,13 +74,15 @@ internal class EventRoutes(private val eventService: ActorRef) : AllDirectives()
         return onComplete(result) { it.get() }
     }
 
-    private fun createEvent(createEventCommand: CreateEventCommand): Route {
-        eventService.tell(createEventCommand, ActorRef.noSender())
-        return complete(
-            HttpResponse.create()
-                .addHeader(HttpHeader.parse("Access-Control-Allow-Origin", "*"))
-                .withStatus(StatusCodes.CREATED)
-        )
+    private fun createEvent(): Route {
+        return entity(createEventCommandUnmarshaller) {
+            eventService.tell(EventService.Message(eventMessage = it), ActorRef.noSender())
+            complete(
+                HttpResponse.create()
+                    .addHeader(HttpHeader.parse("Access-Control-Allow-Origin", "*"))
+                    .withStatus(StatusCodes.CREATED)
+            )
+        }
     }
 
     companion object {

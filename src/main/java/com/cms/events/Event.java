@@ -9,6 +9,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 public final class Event {
 
@@ -30,6 +31,7 @@ public final class Event {
 
     public Event(String title, String description, LocalDateTime startDate, LocalDateTime endDate, String author,
                  List<String> users, List<Comment> comments) {
+        this._id = UUID.randomUUID().toString();
         this.title = title;
         this.description = description;
         this.startDate = startDate;
