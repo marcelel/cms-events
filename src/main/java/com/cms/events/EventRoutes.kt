@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import java.time.Duration
 
-internal class EventRoutes(private val eventService: ActorRef) : AllDirectives() {
+internal class EventRoutes(private val eventActorSupervisor: ActorRef) : AllDirectives() {
 
     private val timeout = Duration.ofSeconds(5)
     private val createEventCommandUnmarshaller: Unmarshaller<HttpEntity, CreateEventCommand> =
@@ -55,8 +55,8 @@ internal class EventRoutes(private val eventService: ActorRef) : AllDirectives()
 
     private fun getEvent(id: String): Route {
         val query = GetEventQuery()
-        val message = EventService.Message(id, query)
-        val result = ask(eventService, message, timeout).thenApply { it as GetEventQueryResult }
+        val message = EventActorSupervisor.Message(id, query)
+        val result = ask(eventActorSupervisor, message, timeout).thenApply { it as GetEventQueryResult }
             .thenApply { it.event }
             .thenApply { if (it != null) OBJECT_MAPPER.writeValueAsString(it) else "" }
             .thenApply {
@@ -76,7 +76,7 @@ internal class EventRoutes(private val eventService: ActorRef) : AllDirectives()
 
     private fun createEvent(): Route {
         return entity(createEventCommandUnmarshaller) {
-            eventService.tell(EventService.Message(eventMessage = it), ActorRef.noSender())
+            eventActorSupervisor.tell(EventActorSupervisor.Message(eventMessage = it), ActorRef.noSender())
             complete(
                 HttpResponse.create()
                     .addHeader(HttpHeader.parse("Access-Control-Allow-Origin", "*"))

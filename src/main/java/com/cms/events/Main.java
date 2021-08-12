@@ -2,7 +2,10 @@ package com.cms.events;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
+import akka.cluster.sharding.ClusterSharding;
+import akka.cluster.sharding.ClusterShardingSettings;
 import akka.http.javadsl.Http;
+import akka.stream.Materializer;
 import com.cms.events.mongo.MongoConfiguration;
 import com.cms.events.mongo.ReadDataStore;
 import com.mongodb.reactivestreams.client.MongoDatabase;
@@ -16,13 +19,16 @@ class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     private static ActorSystem system;
+    private static Materializer materializer;
     private static EventRepository eventRepository;
+    private static ActorRef eventActorSupervisor;
 
     public static void main(String[] args) {
         loadConfigOverrides(args);
 
         initializeActorSystem();
         initializeEventRepository();
+        initializeActors();
         initializeHttpServer();
     }
 
@@ -43,7 +49,8 @@ class Main {
     }
 
     private static void initializeActorSystem() {
-        system = ActorSystem.create("events");
+        system = ActorSystem.create("Events");
+        materializer = Materializer.createMaterializer(system);
     }
 
     private static void initializeEventRepository() {
@@ -52,9 +59,17 @@ class Main {
         eventRepository = new MongoEventRepository(readDataStore);
     }
 
+    private static void initializeActors() {
+        eventActorSupervisor = ClusterSharding.get(system).start(
+                "eventShardedActor",
+                EventActor.create(eventRepository),
+                ClusterShardingSettings.create(system),
+                new EventShardingMessageExtractor(30)
+        );
+    }
+
     private static void initializeHttpServer() {
-        ActorRef eventServiceActor = system.actorOf(EventService.create(eventRepository));
-        EventRoutes routes = new EventRoutes(eventServiceActor);
+        EventRoutes routes = new EventRoutes(eventActorSupervisor);
 
         int httpPort = system.settings()
                 .config()

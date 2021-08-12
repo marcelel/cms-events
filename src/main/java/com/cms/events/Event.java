@@ -15,6 +15,7 @@ public final class Event {
 
     private String _id;
     private String title;
+    private EventType type;
     private String description;
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -29,8 +30,9 @@ public final class Event {
     public Event() {
     }
 
-    public Event(String title, String description, LocalDateTime startDate, LocalDateTime endDate, String author,
-                 List<String> users, List<Comment> comments) {
+    public Event(String title, EventType type, String description, LocalDateTime startDate, LocalDateTime endDate,
+                 String author, List<String> users, List<Comment> comments) {
+        this.type = type;
         this._id = UUID.randomUUID().toString();
         this.title = title;
         this.description = description;
@@ -41,10 +43,11 @@ public final class Event {
         this.comments = comments;
     }
 
-    public Event(String _id, String title, String description, LocalDateTime startDate, LocalDateTime endDate,
-                 String author, List<String> users, List<Comment> comments) {
+    public Event(String _id, String title, EventType type, String description, LocalDateTime startDate,
+                 LocalDateTime endDate, String author, List<String> users, List<Comment> comments) {
         this._id = _id;
         this.title = title;
+        this.type = type;
         this.description = description;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -59,6 +62,10 @@ public final class Event {
 
     public String getTitle() {
         return title;
+    }
+
+    public EventType getType() {
+        return type;
     }
 
     public String getDescription() {
@@ -91,6 +98,10 @@ public final class Event {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public void setType(EventType type) {
+        this.type = type;
     }
 
     public void setDescription(String description) {
