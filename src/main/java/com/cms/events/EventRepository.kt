@@ -10,6 +10,8 @@ interface EventRepository {
 
     fun update(user: Event): CompletableFuture<Done>
 
+    fun delete(event: Event): CompletableFuture<Done>
+
     fun find(id: String): CompletableFuture<Event?>
 
     fun findByUserId(userId: String): CompletableFuture<List<Event>>
@@ -23,6 +25,10 @@ class MongoEventRepository(private val readDataStore: ReadDataStore) : EventRepo
 
     override fun update(user: Event): CompletableFuture<Done> {
         return readDataStore.update(user._id, user)
+    }
+
+    override fun delete(event: Event): CompletableFuture<Done> {
+        return readDataStore.delete(event._id)
     }
 
     override fun find(id: String): CompletableFuture<Event?> {

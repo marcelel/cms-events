@@ -21,8 +21,10 @@ class ReadDataStore(private val system: ActorSystem, private val mongoDatabase: 
     private val objectMapper = JsonSerializerFactory.jsonSerializer().objectMapper
     private val listClass = objectMapper.typeFactory.constructCollectionType(List::class.java, Event::class.java)
 
+    private val collectionName = "events"
+
     fun find(id: String): CompletableFuture<Event?> {
-        val collection = mongoDatabase.getCollection("events")
+        val collection = mongoDatabase.getCollection(collectionName)
         val publisher = collection.find(Document().append(ID_FIELD, id)).first()
         val source = MongoSource.create(publisher)
         return source.runWith(Sink.seq(), system)
@@ -32,7 +34,7 @@ class ReadDataStore(private val system: ActorSystem, private val mongoDatabase: 
     }
 
     fun findByUserId(userId: String): CompletableFuture<List<Event>> {
-        val collection = mongoDatabase.getCollection("events")
+        val collection = mongoDatabase.getCollection(collectionName)
         val publisher = collection.find(Document().append(AUTHOR_FIELD, userId))
         val source = MongoSource.create(publisher)
         return source.runWith(Sink.seq(), system)
@@ -41,7 +43,7 @@ class ReadDataStore(private val system: ActorSystem, private val mongoDatabase: 
     }
 
     fun save(event: Event): CompletableFuture<Done> {
-        val collection = mongoDatabase.getCollection("events")
+        val collection = mongoDatabase.getCollection(collectionName)
         val json = objectMapper.writeValueAsString(event)
         val document = Document.parse(json)
         return Source.single(document).runWith(MongoSink.insertOne(collection), system)
@@ -49,11 +51,17 @@ class ReadDataStore(private val system: ActorSystem, private val mongoDatabase: 
     }
 
     fun update(id: String, entity: Event): CompletableFuture<Done> {
-        val collection = mongoDatabase.getCollection("events")
+        val collection = mongoDatabase.getCollection(collectionName)
         val json = objectMapper.writeValueAsString(entity)
         val document = Document.parse(json)
         val documentReplace = DocumentReplace.create(Filters.eq("_id", id), document)
         return Source.single(documentReplace).runWith(MongoSink.replaceOne(collection), system)
+            .toCompletableFuture()
+    }
+
+    fun delete(id: String): CompletableFuture<Done> {
+        val collection = mongoDatabase.getCollection(collectionName)
+        return Source.single(Filters.eq("_id", id)).runWith(MongoSink.deleteOne(collection), system)
             .toCompletableFuture()
     }
 }

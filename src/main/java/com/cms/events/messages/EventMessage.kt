@@ -53,4 +53,4 @@ data class UpdateEventCommand(
     }
 }
 
-class DeleteEventCommand : EventMessage()
+data class DeleteEventCommand(val eventId: String) : EventMessage()

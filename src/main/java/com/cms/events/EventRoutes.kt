@@ -16,6 +16,10 @@ import com.cms.events.messages.CreateEventClashesResult
 import com.cms.events.messages.CreateEventCommand
 import com.cms.events.messages.CreateEventResult
 import com.cms.events.messages.CreateEventSubmittedResult
+import com.cms.events.messages.DeleteEventCommand
+import com.cms.events.messages.DeleteEventDeletedResult
+import com.cms.events.messages.DeleteEventNotFoundResult
+import com.cms.events.messages.DeleteEventResult
 import com.cms.events.messages.GetAllEventsQuery
 import com.cms.events.messages.GetAllEventsQueryResult
 import com.cms.events.messages.GetEventsFromPeriodQuery
@@ -70,9 +74,14 @@ internal class EventRoutes(private val eventActorSupervisor: ActorRef) : AllDire
                                     pathPrefix(
                                         PathMatchers.segment()
                                     ) { eventId ->
-                                        pathEnd {
-                                            put { updateEvent(userId, eventId) }
-                                        }
+                                        concat(
+                                            pathEnd {
+                                                put { updateEvent(userId, eventId) }
+                                            },
+                                            pathEnd {
+                                                delete { deleteEvent(userId, eventId) }
+                                            }
+                                        )
                                     }
                                 )
                             })
@@ -121,6 +130,20 @@ internal class EventRoutes(private val eventActorSupervisor: ActorRef) : AllDire
         }
     }
 
+    private fun deleteEvent(userId: String, eventId: String): Route {
+        val command = DeleteEventCommand(eventId)
+        val message = MessageEnvelope(command, userId)
+        val result = ask(eventActorSupervisor, message, timeout).thenApply { it as DeleteEventResult }
+            .thenApply {
+                when (it) {
+                    is DeleteEventNotFoundResult -> badRequest("Event $eventId does not exist")
+                    is DeleteEventDeletedResult -> deleted()
+                }
+            }
+            .thenApply { complete(it) }
+        return onComplete(result) { it.get() }
+    }
+
     private fun getEventsFromPeriod(userId: String, startDate: LocalDateTime, endDate: LocalDateTime): Route {
         val query = GetEventsFromPeriodQuery(startDate, endDate)
         val message = MessageEnvelope(query, userId)
@@ -153,6 +176,13 @@ internal class EventRoutes(private val eventActorSupervisor: ActorRef) : AllDire
             .addHeader(HttpHeader.parse("Access-Control-Allow-Origin", "*"))
             .addHeader(HttpHeader.parse("Content-Type", "application/json"))
             .withEntity(ContentTypes.APPLICATION_JSON, message)
+    }
+
+    private fun deleted(): HttpResponse {
+        return HttpResponse.create()
+            .withStatus(StatusCodes.NO_CONTENT)
+            .addHeader(HttpHeader.parse("Access-Control-Allow-Origin", "*"))
+            .addHeader(HttpHeader.parse("Content-Type", "application/json"))
     }
 
     companion object {

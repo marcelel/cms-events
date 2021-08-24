@@ -7,6 +7,9 @@ import akka.pattern.Patterns.pipe
 import com.cms.events.messages.CreateEventClashesResult
 import com.cms.events.messages.CreateEventCommand
 import com.cms.events.messages.CreateEventSubmittedResult
+import com.cms.events.messages.DeleteEventCommand
+import com.cms.events.messages.DeleteEventDeletedResult
+import com.cms.events.messages.DeleteEventNotFoundResult
 import com.cms.events.messages.GetAllEventsQuery
 import com.cms.events.messages.GetAllEventsQueryResult
 import com.cms.events.messages.GetEventsFromPeriodQuery
@@ -69,6 +72,7 @@ class UserActor private constructor(
         return receiveBuilder()
             .match(CreateEventCommand::class.java, this::handle)
             .match(UpdateEventCommand::class.java, this::handle)
+            .match(DeleteEventCommand::class.java, this::handle)
             .match(GetEventsFromPeriodQuery::class.java, this::handle)
             .match(GetAllEventsQuery::class.java, this::handle)
             .build()
@@ -107,6 +111,21 @@ class UserActor private constructor(
         val result = eventRepository.update(updatedEvent)
             .thenCompose { publishActivity("Event with id ${event._id} and title ${event.title} updated") }
             .thenApply { UpdateEventSubmittedResult(userId, event._id) }
+        pipe(result, context.dispatcher).to(sender)
+    }
+
+    private fun handle(command: DeleteEventCommand) {
+        val event = events.find { it._id == command.eventId }
+
+        if (event == null) {
+            sender.tell(DeleteEventNotFoundResult(userId, command.eventId), self)
+            return
+        }
+
+        events.remove(event)
+        val result = eventRepository.delete(event)
+            .thenCompose { publishActivity("Event with id ${event._id} and title ${event.title} removed") }
+            .thenApply { DeleteEventDeletedResult(userId, event._id) }
         pipe(result, context.dispatcher).to(sender)
     }
 
