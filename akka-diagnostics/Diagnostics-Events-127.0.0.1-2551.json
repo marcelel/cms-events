@@ -1,12 +1,12 @@
 {
-  "start-time" : "2021-07-26T19:13:33.296",
+  "start-time" : "2021-08-24T22:32:16.650",
   "akka-version" : "2.6.15",
   "classpath" : "/Users/mlekston/IdeaProjects/cms/events/target/events-1.0-SNAPSHOT-allinone.jar",
   "configuration-warnings" : [],
   "system-metrics" : {
     "heap-init" : 268435456,
     "heap-max" : 4294967296,
-    "heap-used" : 58615296,
+    "heap-used" : 65398784,
     "heap-committed" : 268435456,
     "os-processors" : 12,
     "mem-pool-0" : {
@@ -14,7 +14,7 @@
       "type" : "Non-heap memory",
       "init" : 2555904,
       "max" : 5836800,
-      "used" : 1336960,
+      "used" : 1332608,
       "committed" : 2555904
     },
     "mem-pool-1" : {
@@ -22,55 +22,55 @@
       "type" : "Non-heap memory",
       "init" : 0,
       "max" : -1,
-      "used" : 63650760,
-      "committed" : 66195456
+      "used" : 65340880,
+      "committed" : 67944448
     },
     "mem-pool-2" : {
       "name" : "CodeHeap 'profiled nmethods'",
       "type" : "Non-heap memory",
       "init" : 2555904,
       "max" : 122908672,
-      "used" : 7737728,
-      "committed" : 7798784
+      "used" : 8043520,
+      "committed" : 8060928
     },
     "mem-pool-3" : {
       "name" : "Compressed Class Space",
       "type" : "Non-heap memory",
       "init" : 0,
       "max" : 1073741824,
-      "used" : 8140320,
-      "committed" : 9437184
+      "used" : 8264000,
+      "committed" : 9568256
     },
     "mem-pool-4" : {
       "name" : "G1 Eden Space",
       "type" : "Heap memory",
       "init" : 27262976,
       "max" : -1,
-      "used" : 44040192,
-      "committed" : 145752064
+      "used" : 49283072,
+      "committed" : 149946368
     },
     "mem-pool-5" : {
       "name" : "G1 Old Gen",
       "type" : "Heap memory",
       "init" : 241172480,
       "max" : 4294967296,
-      "used" : 3040768,
-      "committed" : 111149056
+      "used" : 7727104,
+      "committed" : 110100480
     },
     "mem-pool-6" : {
       "name" : "G1 Survivor Space",
       "type" : "Heap memory",
       "init" : 0,
       "max" : -1,
-      "used" : 11534336,
-      "committed" : 11534336
+      "used" : 8388608,
+      "committed" : 8388608
     },
     "mem-pool-7" : {
       "name" : "CodeHeap 'non-profiled nmethods'",
       "type" : "Non-heap memory",
       "init" : 2555904,
       "max" : 122912768,
-      "used" : 2189568,
+      "used" : 1925632,
       "committed" : 2555904
     }
   },
@@ -384,7 +384,7 @@
     "os" : {
         "arch" : "x86_64",
         "name" : "Mac OS X",
-        "version" : "11.4"
+        "version" : "11.5.2"
     },
     "path" : {
         "separator" : ":"

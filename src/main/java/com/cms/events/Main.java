@@ -6,6 +6,9 @@ import akka.cluster.sharding.ClusterSharding;
 import akka.cluster.sharding.ClusterShardingSettings;
 import akka.http.javadsl.Http;
 import akka.stream.Materializer;
+import com.cms.events.activities.ActivitiesKafkaService;
+import com.cms.events.activities.KafkaProducerSettingsFactory;
+import com.cms.events.messages.EventShardingMessageExtractor;
 import com.cms.events.mongo.MongoConfiguration;
 import com.cms.events.mongo.ReadDataStore;
 import com.mongodb.reactivestreams.client.MongoDatabase;
@@ -60,9 +63,10 @@ class Main {
     }
 
     private static void initializeActors() {
+        ActivitiesKafkaService activityService = new ActivitiesKafkaService(system, new KafkaProducerSettingsFactory(system).create(), "activities");
         eventActorSupervisor = ClusterSharding.get(system).start(
                 "eventShardedActor",
-                EventActor.create(eventRepository),
+                UserActor.create(activityService, eventRepository),
                 ClusterShardingSettings.create(system),
                 new EventShardingMessageExtractor(30)
         );
